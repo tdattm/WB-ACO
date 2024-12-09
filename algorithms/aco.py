@@ -2,19 +2,27 @@
 
 import random
 import math
-from wb.wb import WB  # Import lớp WB từ WB.py
+from wb.wb import WB  # type: ignore # Import lớp WB từ WB.py
 
 class Ant:
     def __init__(self, cargo_list):
         # Deep copy để tránh thay đổi dữ liệu gốc
-        self.cargo_list = [cargo.copy() for cargo in cargo_list if cargo['quantity'] > 0]
+        self.cargo_list = [cargo.copy() for cargo in cargo_list]
         self.loaded_cargoes = []             # Danh sách hàng hóa đã xếp
         self.current_solution = []           # Kế hoạch xếp hàng hiện tại
 
-    def remove_cargo_if_zero(self, cargo):
+    def load_cargo(self, cargo, wb):
         for c in self.cargo_list:
             if c['id'] == cargo['id']:
-                self.cargo_list.remove(c)
+                self.loaded_cargoes.append(c.copy())
+                wb.loaded_cargoes.append(c.copy())  # Thêm hàng hóa vào danh sách đã xếp của WB
+                self.cargo_list.remove(c)  # Xóa hàng hóa khỏi danh sách của kiến
+                break
+            
+    def remove_cargo(self, cargo):
+        for c in self.cargo_list:
+            if c['id'] == cargo['id']:
+                self.cargo_list.remove(c)  # Xóa hàng hóa khỏi danh sách của kiến
                 break
 
 class ACO:
@@ -32,19 +40,18 @@ class ACO:
         self.best_solution = None
         self.best_utilization = 0
         self.load_capacity = params['load_capacity']    # Trọng tải tối đa
-        self.volume_capacity = (container_dimensions[0] *
-                                container_dimensions[1] *
-                                container_dimensions[2])  # Thể tích container
+        self.volume_capacity = params['volume_capacity']  # Thể tích container
         self.initialize_pheromones()
     
     def initialize_pheromones(self):
         # Khởi tạo lượng pheromone giữa các hàng hóa
         for cargo_i in self.original_cargo_list:
             for cargo_j in self.original_cargo_list:
-                # Bao gồm cả khi cargo_i['id'] == cargo_j['id']
-                self.tau[(cargo_i['id'], cargo_j['id'])] = 1.0  # Pheromone ban đầu
+                if (cargo_i['id'] != cargo_j['id']):
+                    self.tau[(cargo_i['id'], cargo_j['id'])] = 1.0  # Pheromone ban đầu
     
     def run(self):
+        number_cagos_loaded = 0
         for iteration in range(self.num_iterations):
             ants = [Ant(self.original_cargo_list) for _ in range(self.num_ants)]
             # Lấy giá trị alpha và beta cho lần lặp hiện tại
@@ -53,13 +60,14 @@ class ACO:
             beta = self.beta_values[idx]
             for ant in ants:
                 self.construct_solution(ant, alpha, beta)
-                utilization = self.evaluate_solution(ant)
+                utilization, num_cargo = self.evaluate_solution(ant)
                 if utilization > self.best_utilization:
+                    number_cagos_loaded = num_cargo
                     self.best_utilization = utilization
                     self.best_solution = ant.current_solution.copy()
             self.update_pheromones()
-            print(f"Iteration {iteration+1}/{self.num_iterations}, Best Utilization: {self.best_utilization:.4f}")
-        return self.best_solution, self.best_utilization
+            print(f"Iteration {iteration+1}/{self.num_iterations}, Best Utilization: {self.best_utilization:.3f}")
+        return self.best_solution, self.best_utilization, number_cagos_loaded
     
     def construct_solution(self, ant, alpha, beta):
         wb = WB(self.container_dimensions, [])
@@ -67,17 +75,9 @@ class ACO:
         if not ant.cargo_list:
             return
         current_cargo = random.choice(ant.cargo_list)
-        # Giảm số lượng hàng hóa
-        self.decrease_cargo_quantity(ant, current_cargo)
-        wb.cargo_list = [current_cargo]
-        wb.load_cargo()
-        # Giả sử load_cargo() xếp một đơn vị hàng hóa
-        if wb.loaded_cargoes:
-            loaded_cargo = wb.loaded_cargoes[-1]
-            # print(f"Ant loaded cargo: {loaded_cargo['id']}")
-            ant.current_solution.append(loaded_cargo)
-            ant.loaded_cargoes.append(loaded_cargo)
-        # Tiếp tục chọn hàng hóa tiếp theo
+        # Thiết lập vị trí ban đầu của hàng hóa
+        current_cargo['x'], current_cargo['y'], current_cargo['z'] = 0, 0, 0  # Vị trí ban đầu là (0, 0, 0)
+
         while ant.cargo_list:
             next_cargo = self.select_next_cargo(ant, current_cargo, alpha, beta)
             if next_cargo is None:
@@ -87,27 +87,21 @@ class ACO:
                 wb.cargo_list = [next_cargo]
                 wb.load_cargo()
                 if wb.loaded_cargoes:
-                    loaded_cargo = wb.loaded_cargoes[-1]
-                    # print(f"Ant loaded cargo: {loaded_cargo['id']}")
-                    ant.current_solution.append(loaded_cargo)
-                    ant.loaded_cargoes.append(loaded_cargo)
-                    # Giảm số lượng hàng hóa
-                    self.decrease_cargo_quantity(ant, next_cargo)
+                    # Cập nhật cho kế hoạch của 'kiến'
+                    ant.current_solution.append(next_cargo)
+                    # Tải và cập nhật hàng hóa 
+                    ant.load_cargo(next_cargo, wb) # vị trí của hàng hóa sẽ gián tiếp được cập nhật ở đây
                     current_cargo = next_cargo
                 else:
-                    # Không thể xếp do giới hạn không gian
-                    self.decrease_cargo_quantity(ant, next_cargo)
+                    ant.remove_cargo(next_cargo)
             else:
-                # Không thể xếp do vượt quá tải trọng hoặc thể tích
-                self.decrease_cargo_quantity(ant, next_cargo)
+                ant.remove_cargo(next_cargo)
+
     
     def select_next_cargo(self, ant, current_cargo, alpha, beta):
         probabilities = []
         denom = 0.0
         for cargo in ant.cargo_list:
-            # Chỉ xét hàng hóa còn số lượng >0
-            if cargo['quantity'] <= 0:
-                continue
             tau = self.tau.get((current_cargo['id'], cargo['id']), 1.0)
             eta = self.calculate_eta(current_cargo, cargo)
             prob = (tau ** alpha) * (eta ** beta)
@@ -145,9 +139,20 @@ class ACO:
         return True
     
     def evaluate_solution(self, ant):
-        total_volume = sum(c['volume'] for c in ant.loaded_cargoes)
+        total_volume = 0
+        count_cago = 0
+        for c in ant.current_solution:
+            if c['x'] == 0  and c['y'] == 0 and c['z'] == 0:
+                continue
+            else:
+                if total_volume + c['volume'] <= self.volume_capacity:
+                    total_volume += c['volume']
+                    count_cago += 1
+                else:
+                    break
         utilization = total_volume / self.volume_capacity
-        return utilization
+        return [utilization * 100, count_cago]
+
     
     def update_pheromones(self):
         # Bay hơi pheromone
@@ -167,11 +172,4 @@ class ACO:
                 else:
                     # Nếu key chưa tồn tại, tạo nó
                     self.tau[key] = delta_tau
-    
-    def decrease_cargo_quantity(self, ant, cargo):
-        for c in ant.cargo_list:
-            if c['id'] == cargo['id']:
-                c['quantity'] -= 1
-                if c['quantity'] <= 0:
-                    ant.remove_cargo_if_zero(c)
-                break
+

@@ -41,19 +41,19 @@ class WB:
         self.remaining_spaces.remove(space)
         # Tạo ba không gian con: bên phải, phía trước, phía trên
         right_space = SubSpace(
-            length=space.length - cargo['length'],
-            width=cargo['width'],
-            height=cargo['height'],
-            x=space.x + cargo['length'],
-            y=space.y,
+            length=cargo['length'],
+            width=space.width - cargo['width'],
+            height=space.height,
+            x=space.x,
+            y=space.y+cargo['width'],
             z=space.z
         )
         front_space = SubSpace(
-            length=cargo['length'],
-            width=space.width - cargo['width'],
-            height=cargo['height'],
-            x=space.x,
-            y=space.y + cargo['width'],
+            length=space.length-cargo['length'],
+            width=space.width,
+            height=space.height,
+            x=space.x + cargo['length'],
+            y=space.y,
             z=space.z
         )
         upper_space = SubSpace(
@@ -64,12 +64,16 @@ class WB:
             y=space.y,
             z=space.z + cargo['height']
         )
+        # Cập nhật vị trí hàng hóa đã xếp
+        cargo['x'], cargo['y'], cargo['z'] = space.x, space.y, space.z
+
         # Thêm các không gian con vào danh sách không gian còn lại nếu chúng hợp lệ
         for subspace in [right_space, front_space, upper_space]:
             if subspace.length > 0 and subspace.width > 0 and subspace.height > 0:
                 self.remaining_spaces.append(subspace)
         # Hợp nhất không gian nếu có thể
         self.merge_spaces()
+
     
     def merge_spaces(self):
         # Hợp nhất các không gian liền kề theo trục Y
@@ -79,11 +83,11 @@ class WB:
                 s1 = spaces[i]
                 s2 = spaces[j]
                 if (s1.z == s2.z and s1.x == s2.x and
-                    s1.y + s1.width == s2.y and s1.length == s2.length and s1.height == s2.height):
+                    s1.y + s1.length == s2.y and s1.width == s2.width and s1.height == s2.height):
                     # Hợp nhất theo trục Y
                     new_space = SubSpace(
-                        length=s1.length,
-                        width=s1.width + s2.width,
+                        length=s1.length + s2.length,
+                        width=s1.width,
                         height=s1.height,
                         x=s1.x,
                         y=s1.y,
@@ -100,11 +104,11 @@ class WB:
                 s1 = spaces[i]
                 s2 = spaces[j]
                 if (s1.z == s2.z and s1.y == s2.y and
-                    s1.x + s1.length == s2.x and s1.width == s2.width and s1.height == s2.height):
+                    s1.x + s1.width == s2.x and s1.length == s2.length and s1.height == s2.height):
                     # Hợp nhất theo trục X
                     new_space = SubSpace(
-                        length=s1.length + s2.length,
-                        width=s1.width,
+                        length=s1.length,
+                        width=s1.width + s2.width,
                         height=s1.height,
                         x=s1.x,
                         y=s1.y,
