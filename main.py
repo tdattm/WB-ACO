@@ -1,14 +1,14 @@
 # main.py
-
 from algorithms.aco import ACO
 from processing_data.create_box import create_boxes_from_file
 import matplotlib.pyplot as plt
 import random
 import pandas as pd
+import sys
 
 # Dữ liệu tối ưu được lưu lại sau nhiều lần chạy
 data = {(5, 2): 77.7, (10, 2): 77.56, (15, 2): 78.36 , (25, 2): 77.65, (50,2):78.16, (100, 2): 78.75, 
-        (5, 5): 77.71, (10, 5): 78.04,(15, 5): 78.3, (25, 5): 78.5, (50, 5): 78.8, (100, 5): 79.21}
+        (5, 5): 77.71, (10, 5): 78.04,(15, 5): 78.3, (25, 5): 78.5, (50, 5): 78.8, (100, 5): 79.21, (200, 5): 78.61, (400, 5): 78.54, (600, 40): 79.7} 
 
 def plot_container(container_dimensions, loaded_cargos, best_utilization, number_cagos_loaded, num_ants, num_iterations):
     # Tạo figure
@@ -87,6 +87,12 @@ def plot_data(data, num_iterations):
     # Vẽ đồ thị đường
     plt.figure(figsize=(8, 6))
     plt.plot(ants_values, optimal_values, marker='o', linestyle='-', color='b', label=f'Iterations = {num_iterations}')
+    
+    # Vẽ đường thẳng tham chiếu màu đỏ song song với trục iterations
+    reference_value = 79.7
+    plt.axhline(y=reference_value, color='red', linestyle='--', label=f'Optimal Value = {reference_value} (Ants = 600; Iterations = 40)')
+    
+    # Cài đặt các trục và nhãn
     plt.xlabel('Number of Ants')
     plt.ylabel('Optimal Value')
     plt.title(f'Optimal Value for Number of Ants with {num_iterations} Iterations')
@@ -94,17 +100,18 @@ def plot_data(data, num_iterations):
     plt.legend()
     plt.show()
 
-def main():
+def main(args):
     # Đọc dữ liệu hàng hóa từ file
     cargo_list = create_boxes_from_file('data/boxes.txt')
 
     # Kích thước container (chiều dài, chiều rộng, chiều cao)
     container_dimensions = (12.025, 2.34, 2.67) 
-
+    num_ants = int(input("Number of ants: "))
+    num_iterations = int(input("Number of iterations: "))
     # Tham số cho ACO
     params = {
-        'num_ants': 2,  # Số lượng kiến
-        'num_iterations': 1,  # Số lần lặp
+        'num_ants': num_ants,  # Số lượng kiến
+        'num_iterations': num_iterations,  # Số lần lặp
         'alpha_values': [1, 2, 4, 6, 8, 9, 4, 2, 1],  # Giá trị alpha
         'beta_values': [9, 8, 6, 4, 2, 1, 6, 8, 9],   # Giá trị beta
         'rho': 0.6,          # Hệ số bay hơi pheromone
@@ -169,4 +176,4 @@ def main():
     plot_container(container_dimensions, loaded_cargos, best_utilization, number_cagos_loaded, params['num_ants'], params['num_iterations'])
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
