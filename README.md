@@ -12,9 +12,9 @@ To solve this problem, we propose the use of the **Ant Colony Optimization (ACO)
 
 To evaluate the space utilization of the container, we use a metric called the **volume utilization ratio**, denoted as \( Z \). This ratio is defined as the ratio of the total volume of loaded goods to the available volume of the container:
 
-$$
-\text{max} \, Z = \frac{\sum_{i=1}^{N} l_i w_i h_i}{V} \tag{1}
-$$
+<p align="center">
+	<img src=".assets/ObjFunction.png" />
+</p>
 
 where \( l_i, w_i, h_i \) are the length, width, and height of the \( i \)-th item, respectively, and \( V \) is the total volume of the container.
 
@@ -22,25 +22,21 @@ where \( l_i, w_i, h_i \) are the length, width, and height of the \( i \)-th it
 
 1. The total volume of all loaded items must not exceed the volume of the container:
 
-$$
-\sum_{i=1}^{N} l_i w_i h_i \leq V \tag{2}
-$$
+<p align="center">
+	<img src=".assets/Constraint_1.png" />
+</p>
 
 2. The total weight of all loaded items must not exceed the weight capacity of the container:
 
-$$
-\sum_{i=1}^{N} g_i \leq G \tag{3}
-$$
+<p align="center">
+	<img src=".assets/Constraint_2.png" />
+</p>
 
 3. The center of gravity of the loaded goods must satisfy the following conditions for each direction of the three axes in the coordinate system:
 
-$$
-\begin{cases}
-\quad c1x \leq \frac{\sum_{i=1}^{N} g_i x_i}{\sum_{i=1}^{N} g_i} \leq c2x \\[1em]
-\quad c1y \leq \frac{\sum_{i=1}^{N} g_i y_i}{\sum_{i=1}^{N} g_i} \leq c2y \\[1em]
-\quad 0 \leq \frac{\sum_{i=1}^{N} g_i z_i}{\sum_{i=1}^{N} g_i} \leq cz
-\end{cases}
-$$
+<p align="center">
+	<img src=".assets/Constraint_3.png" />
+</p>
 
 4. Each item must fit within the available space in the container, i.e., each dimension must not exceed the size of the corresponding subspace:
 
