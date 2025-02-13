@@ -48,7 +48,7 @@ $$
 \end{cases}
 $$
 
-where \( [L_s, W_s, H_s] \) are the dimensions of the available subspace for item \( i \), and \( i \in \{1, 2, 3, \dots, N\} \).
+where \( [L_s, W_s, H_s] \) are the dimensions of the available subspace for item i (i in 1,2,...,N).
 
 ## Experimental Results
 
