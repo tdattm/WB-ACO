@@ -48,7 +48,7 @@ $$
 \end{cases}
 $$
 
-where ` [L_s, W_s, H_s] ` are the dimensions of the available subspace for item i (i in 1,2,...,N).
+where ` [L_s, W_s, H_s] ` are the dimensions of the available subspace for item `i` (`i` in `1,2,...,N`).
 
 ## Experimental Results
 
@@ -56,7 +56,7 @@ where ` [L_s, W_s, H_s] ` are the dimensions of the available subspace for item 
 	<img src=".assets/LoadingImg.png" />
 </p>
  
-When running the model on a dataset of 600 goods with varying sizes, and using initialization parameters such as: number of ants = 600, and number of iterations = 40, we obtained very positive results, as shown above, with an optimization rate of up to 79.69%.
+When running the model on a dataset of 600 goods with varying sizes, and using initialization parameters such as: number of ants = `600`, and number of iterations = `40`, we obtained very positive results, as shown above, with an optimization rate of up to `79.69%`.
 
 Optimum value after 2 iterations:
 <p align="center">
@@ -69,7 +69,7 @@ Optimum value after 5 iterations:
 </p>
 
 ## References
-[1] Intelligent Loading of Scattered Cargoes Based on Improved Ant Colony Optimization | Zhisong Lin1*, Xiu Chen2 
+[1] [Intelligent Loading of Scattered Cargoes Based on Improved Ant Colony Optimization | Zhisong Lin1*, Xiu Chen2](https://www.iieta.org/journals/ria/paper/10.18280/ria.330206)
 
 ## Installation
 You can install the required libraries using pip:
