@@ -10,13 +10,13 @@ To solve this problem, we propose the use of the **Ant Colony Optimization (ACO)
 
 ### Objective Function
 
-To evaluate the space utilization of the container, we use a metric called the **volume utilization ratio**, denoted as \( Z \). This ratio is defined as the ratio of the total volume of loaded goods to the available volume of the container:
+To evaluate the space utilization of the container, we use a metric called the **volume utilization ratio**, denoted as ` Z `. This ratio is defined as the ratio of the total volume of loaded goods to the available volume of the container:
 
 <p align="center">
 	<img src=".assets/ObjFunction.png" />
 </p>
 
-where \( l_i, w_i, h_i \) are the length, width, and height of the \( i \)-th item, respectively, and \( V \) is the total volume of the container.
+where ` l_i, w_i, h_i ` are the length, width, and height of the ` i `-th item, respectively, and ` V ` is the total volume of the container.
 
 ### Constraints
 
@@ -48,7 +48,7 @@ $$
 \end{cases}
 $$
 
-where \( [L_s, W_s, H_s] \) are the dimensions of the available subspace for item i (i in 1,2,...,N).
+where ` [L_s, W_s, H_s] ` are the dimensions of the available subspace for item i (i in 1,2,...,N).
 
 ## Experimental Results
 
